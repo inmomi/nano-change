@@ -1,0 +1,86 @@
+## vim.nanorc -- 让 nano 用起来像 vim（能做到的极限）
+## 用法: nano --rcfile=/path/to/vim.nanorc 文件
+## 前提: nano 不能绑定裸字母（hjkl 无修饰键做不到），所以全部用 Alt(=Meta) 组合
+##
+## 核心映射一览
+##   M-h M-j M-k M-l   ←  ← ↓ ↑ →         (vim 的 h j k l)
+##   M-w M-b           ←  下一词 / 上一词   (vim 的 w / b)
+##   M-0 M-$           ←  行首 / 行尾       (vim 的 0 / $)
+##   M-g M-G           ←  跳行 / 文件末尾   (vim 的 gg / G)
+##   M-o               ←  下方插新行        (vim 的 o)
+##   M-/               ←  搜索             (vim 的 /)
+##   M-n M-N           ←  下一个 / 上一个匹配 (vim 的 n / N)
+##   M-x               ←  删字符           (vim 的 x)
+##   M-d               ←  剪切整行         (vim 的 dd，但只需一下)
+##   M-y               ←  复制整行         (vim 的 yy)
+##   M-p               ←  粘贴             (vim 的 p)
+##   M-u M-r           ←  撤销 / 重做       (vim 的 u / Ctrl-r)
+##   M-V               ←  起行选区         (vim 的 V)
+##   M-%               ←  跳到配对括号      (vim 的 %)
+##   M-f M-v           ←  下翻 / 上翻一屏   (vim 的 Ctrl-f / Ctrl-b)
+##   M-> M-<           ←  缩进 / 反缩进     (vim 的 >> / <<)
+##   M-6               ←  复制（nano 原生，保留）
+
+## ── 更像 vim 的编辑行为 ──────────────────────────────
+set linenumbers          # vim 的 set number
+set autoindent           # vim 的 set autoindent
+set casesensitive        # vim 默认区分大小写搜索
+set tabsize 4            # vim 默认是 8，按习惯改成 4，要还原就把这行删掉
+set tabstospaces         # vim 的 set expandtab
+
+## ── 移动：hjkl ───────────────────────────────────────
+bind M-h left main
+bind M-j down main
+bind M-k up main
+bind M-l right main
+
+## ── 按词移动 ─────────────────────────────────────────
+bind M-w nextword main
+bind M-b prevword main
+
+## ── 行首行尾 ─────────────────────────────────────────
+bind M-0 home main
+bind M-$ end main
+
+## ── 跳转 ─────────────────────────────────────────────
+bind M-g gotoline main
+bind M-G lastline main
+
+## ── 编辑 ─────────────────────────────────────────────
+bind M-o enter main          # vim 的 o：在下方开新行
+bind M-x delete main         # vim 的 x
+bind M-d cut main            # vim 的 dd
+bind M-y copy main           # vim 的 yy
+bind M-p paste main          # vim 的 p
+bind M-u undo main           # vim 的 u
+bind M-r redo main           # vim 的 Ctrl-r
+
+## ── 选区与括号 ───────────────────────────────────────
+bind M-V mark main           # vim 的 V，选完用 M-d 剪、M-y 复制
+bind M-% findbracket main    # vim 的 %
+
+## ── 搜索 ─────────────────────────────────────────────
+# 注意：这行会覆盖 nano 默认的 M-/（跳到文件末尾），末尾改用 M-G
+bind M-/ whereis main
+bind M-n findnext main
+bind M-N findprevious main
+
+## ── 翻屏 ─────────────────────────────────────────────
+bind M-f pagedown main
+bind M-v pageup main
+
+## ── 缩进 ─────────────────────────────────────────────
+bind M-> indent main
+bind M-< unindent main
+
+## ── 保留 nano 原生的部分（建议别动）──────────────────
+# ^S 存盘 / ^X 退出 / ^O 写入 / ^R 插文件 / ^K 剪切 / ^U 粘贴
+# ^C 看光标位置 / ^\ 替换（vim 的 :s，只能这样替代）
+# ^Z 挂起符号 / M-A 也是 mark，与 M-V 等价
+
+## ── vim 做不到的那些（别找了）────────────────────────
+# 1. 模态：nano 永远是插入状态，没有 Normal/Insert/Visual 之分
+# 2. :w :q :%s/a/b/g 这类行命令：nano 没有命令行模式
+# 3. 组合操作 count/operator：3dd、ciw、daw、>G 全都不存在
+# 4. 裸字母 hjkl：nano 必须留给打字，字母键不可绑
+# 真想要 vim 键位，请直接装 vim / neovim，用 nano 硬凑不出模态编辑。

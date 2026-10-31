@@ -1,0 +1,61 @@
+## emacs.nanorc -- 让 nano 用起来像 Emacs
+## 用法: nano --rcfile=/path/to/emacs.nanorc 文件
+## 或把本文件内容追加到 ~/.nanorc 末尾
+## 适用于 GNU nano 7.x / 8.x；语法: bind 按键 函数 菜单
+
+## ── 基础设置 ─────────────────────────────────────────
+set linenumbers          # 显示行号，更像在编辑器的状态里
+set constantshow         # 状态栏常显行列位置
+set historylog           # 记住搜索/替换历史，可上下翻
+set multibuffer          # 一次开多个文件时各自是独立缓冲区
+
+## ── 保存：C-x C-s 的替代 ─────────────────────────────
+# nano 的 ^O 会弹出文件名提示；^S 直接落盘，不打断思路
+bind ^S savefile main
+
+## ── 剪贴板：C-y / M-w ────────────────────────────────
+# Emacs: C-k 杀行 → C-y 粘回；nano: ^K 剪切 → 这里把 ^Y 从"上一页"改成"粘贴"
+# 代价: 失去 ^Y 翻页，但 PgUp / M-v 都能翻
+bind ^Y paste main
+bind M-w copy main           # M-w = kill-ring-save，复制当前行或选区
+
+## ── 选区：C-Space ────────────────────────────────────
+# Emacs 里 C-Space 起选，nano 里叫 mark，按完再用 ^K 剪、M-w 复制
+bind ^Space mark main
+
+## ── 查找替换：M-% ────────────────────────────────────
+# Emacs 的 query-replace 是 M-%，nano 的替换本来是 ^\
+bind M-% replace main
+
+## ── 跳转：M-g / M-< / M-> ────────────────────────────
+bind M-g gotoline main       # 跳行（Emacs 的 goto-line）
+bind M-< firstline main      # 文件开头
+bind M-> lastline main       # 文件结尾
+bind M-v pageup main         # 上翻一屏（C-v 下翻一屏，nano 默认一致）
+
+## ── 撤销：C-_ ────────────────────────────────────────
+bind ^_ undo main            # 与 Emacs 的 C-_ 一致；重做仍用 M-E
+
+## ── 换行：C-o 的近似 ─────────────────────────────────
+# Emacs 的 C-o 是 open-line（在光标处插空行），nano 的 enter 行为最接近
+# 注意: 这样 ^O 就不再是"写入文件"了，保存请用 ^S
+bind ^O enter main
+
+## ── 以下是可选项，取消注释前先读说明 ─────────────────
+## 1) 完全打通光标移动（会牺牲 ^B / ^F 的搜索功能）
+##    搜索仍可用 ^W、替换用 ^\ 或 M-%
+# bind ^F right main
+# bind ^B left main
+
+## 2) C-w 改成"剪切选区"（Emacs 的 kill-region）
+##    代价: ^W 不再搜索，只留 ^F 和 M-% 那条路
+# bind ^W cut main
+
+## 3) C-g 改成"取消当前命令"（Emacs 的 keyboard-quit）
+##    代价: ^G 不再打开帮助，需要改用 F1
+# bind ^G cancel main
+
+## ── 无法模拟的部分（nano 没有前缀键机制）─────────────
+## C-x C-s / C-x C-c / C-x C-f 这类双键序列在 nano 里做不出来。
+## 请记三个替代: ^S 存 / ^X 退 / ^R 插入文件。
+## M-x 也没有等价物，nano 的命令都直接绑在键上。

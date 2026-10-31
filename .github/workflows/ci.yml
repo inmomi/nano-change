@@ -1,0 +1,90 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shellcheck:
+    name: shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 安装 shellcheck
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq shellcheck
+      - name: 静态检查
+        run: |
+          shellcheck -V
+          shellcheck -x -S warning install-emacs-keys.sh install-vim-keys.sh tests/run-tests.sh
+
+  test:
+    name: test / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    steps:
+      - uses: actions/checkout@v4
+      - name: 环境信息
+        run: |
+          nano --version | head -1
+          bash --version | head -1
+          command -v script && command -v timeout
+      - name: 运行测试
+        run: bash tests/run-tests.sh
+
+  test-old-nano:
+    name: test / 源码编译 nano ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - version: "5.9"
+            dist: v5
+            experimental: false
+          - version: "2.9.8"
+            dist: v2.9
+            experimental: true
+    continue-on-error: ${{ matrix.experimental }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: 编译安装 nano ${{ matrix.version }}
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq build-essential libncurses-dev curl
+          curl -fsSLO "https://www.nano-editor.org/dist/${{ matrix.dist }}/nano-${{ matrix.version }}.tar.xz"
+          tar -xf "nano-${{ matrix.version }}.tar.xz"
+          cd "nano-${{ matrix.version }}"
+          ./configure --disable-nls >/dev/null
+          make -j2 >/dev/null
+          sudo make install
+          hash -r
+          nano --version | head -1
+      - name: 确认用的是新编的 nano
+        run: command -v nano && nano --version | head -1
+      - name: 运行测试
+        run: bash tests/run-tests.sh
+
+  dry-run-matrix:
+    name: 各版本 dry-run 差异报告
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 列出当前 nano 支持哪些键位
+        run: |
+          ./install-emacs-keys.sh --dry-run
+          echo
+          ./install-vim-keys.sh --dry-run
