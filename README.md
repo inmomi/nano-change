@@ -1,5 +1,7 @@
 # nano-change
 
+[![ci](https://github.com/inmomi/nano-change/actions/workflows/ci.yml/badge.svg)](https://github.com/inmomi/nano-change/actions/workflows/ci.yml)
+
 把 nano 的键位改成 **Emacs** 或 **vim** 的手感——而且不用管你机器上装的是哪个版本的 nano。
 
 nano 是各大发行版默认的编辑器，但它只提供一套固定键位。这个仓库给两套配置：
